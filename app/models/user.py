@@ -7,12 +7,15 @@ import json
 @dataclass
 class User:
     """User model representing all system users"""
+    # All required fields (no defaults) first
     user_id: str
     email: str
     password_hash: str
-    role: str
+    role: str  # 'admin', 'lecturer', 'student'
     first_name: str
     last_name: str
+    
+    # Then optional fields with defaults
     department: Optional[str] = None
     phone: Optional[str] = None
     profile_image: Optional[str] = None
@@ -47,6 +50,7 @@ class User:
 @dataclass
 class Lecturer:
     """Lecturer model - separate from User to avoid inheritance issues"""
+    # All required fields with no defaults first
     user_id: str
     email: str
     password_hash: str
@@ -54,6 +58,8 @@ class Lecturer:
     first_name: str
     last_name: str
     staff_id: str
+    
+    # Then optional fields with defaults
     department: Optional[str] = None
     phone: Optional[str] = None
     profile_image: Optional[str] = None
@@ -95,6 +101,7 @@ class Lecturer:
 @dataclass
 class Student:
     """Student model - separate from User to avoid inheritance issues"""
+    # All required fields with no defaults first
     user_id: str
     email: str
     password_hash: str
@@ -104,6 +111,8 @@ class Student:
     matric_no: str
     programme: str
     year_of_study: int
+    
+    # Then optional fields with defaults
     department: Optional[str] = None
     phone: Optional[str] = None
     profile_image: Optional[str] = None
@@ -114,10 +123,33 @@ class Student:
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
     last_login: Optional[str] = None
+    # Level and semester fields for course filtering
+    current_level: Optional[str] = None  # nd1, nd2, hnd1, hnd2
+    current_semester: Optional[str] = None  # first, second
     
     @property
     def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
+    
+    @property
+    def level_display(self) -> str:
+        """Get display name for level"""
+        levels = {
+            'nd1': 'ND I',
+            'nd2': 'ND II',
+            'hnd1': 'HND I',
+            'hnd2': 'HND II'
+        }
+        return levels.get(self.current_level, self.current_level or 'Not Set')
+    
+    @property
+    def semester_display(self) -> str:
+        """Get display name for semester"""
+        semesters = {
+            'first': 'First Semester',
+            'second': 'Second Semester'
+        }
+        return semesters.get(self.current_semester, self.current_semester or 'Not Set')
     
     def to_dict(self) -> dict:
         """Convert model to dictionary for Redis storage"""
@@ -140,5 +172,7 @@ class Student:
             'gpa': self.gpa,
             'created_at': self.created_at,
             'updated_at': self.updated_at,
-            'last_login': self.last_login
+            'last_login': self.last_login,
+            'current_level': self.current_level,
+            'current_semester': self.current_semester
         }

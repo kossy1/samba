@@ -74,6 +74,21 @@
             .nav-right { margin-left: 0; }
             .recent-list li { flex-direction: column; align-items: flex-start; gap: 5px; }
         }
+        .nav a { 
+    color: #ccc; 
+    text-decoration: none; 
+    padding: 10px 15px; 
+    border-radius: 5px; 
+    transition: background 0.3s; 
+}
+.nav a:hover { 
+    background: #333; 
+    color: white; 
+}
+.nav a.active { 
+    background: #667eea; 
+    color: white; 
+}
     </style>
 </head>
 <body>
@@ -86,6 +101,7 @@
         <a href="{{ url_for('admin.materials') }}">📄 Materials</a>
         <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
         <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+<a href="{{ url_for('admin.bulk_upload') }}">📤 Bulk Upload</a>
         <div class="nav-right">
             <a href="{{ url_for('auth.logout') }}">🚪 Logout</a>
         </div>

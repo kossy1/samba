@@ -1,0 +1,90 @@
+<!-- app/templates/student/submit_assignment.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Assignment</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .header { margin-bottom: 20px; }
+        .header h1 { color: #333; }
+        .header .meta { color: #888; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 150px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .file-upload { border: 2px dashed #ddd; padding: 30px; text-align: center; border-radius: 5px; cursor: pointer; }
+        .file-upload:hover { border-color: #667eea; }
+        .file-upload .icon { font-size: 40px; }
+        .help-text { color: #888; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('student.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('student.course_detail', course_code=assignment.course_code) }}">📚 {{ assignment.course_code }}</a>
+        <a href="#" class="active">📝 Submit</a>
+        <a href="{{ url_for('auth.logout') }}" style="margin-left: auto; color: #e74c3c;">🚪 Logout</a>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>📝 Submit Assignment</h1>
+            <div class="meta">
+                <strong>{{ assignment.title }}</strong><br>
+                Due: {{ assignment.due_date[:10] if assignment.due_date else 'No due date' }} | 
+                Total Marks: {{ assignment.total_marks|default(100) }}
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Text Submission</label>
+                <textarea name="text_submission" placeholder="Enter your submission text here..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>File Upload</label>
+                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                    <div class="icon">📁</div>
+                    <p>Click to upload your assignment file</p>
+                    <p style="color: #888; font-size: 12px;">Supported: PDF, DOC, DOCX, PPT, PPTX, ZIP</p>
+                    <input type="file" id="fileInput" name="file" style="display: none;">
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Submit Assignment</button>
+                <a href="{{ url_for('student.course_detail', course_code=assignment.course_code) }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const uploadDiv = document.querySelector('.file-upload');
+                uploadDiv.innerHTML = `
+                    <div class="icon">📄</div>
+                    <p>Selected: <strong>${file.name}</strong></p>
+                    <p style="color: #888; font-size: 12px;">${(file.size / 1024).toFixed(1)} KB</p>
+                    <input type="file" id="fileInput" name="file" style="display: none;">
+                `;
+                // Re-attach click event
+                uploadDiv.onclick = function() {
+                    document.getElementById('fileInput').click();
+                };
+            }
+        });
+    </script>
+</body>
+</html>

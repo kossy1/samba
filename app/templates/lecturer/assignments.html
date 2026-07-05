@@ -1,0 +1,165 @@
+<!-- app/templates/lecturer/assignments.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignments - {{ course.course_code }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; transition: background 0.3s; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .nav-right { margin-left: auto; }
+        .nav-right a { color: #e74c3c; }
+        
+        .header { background: white; padding: 20px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; color: #333; }
+        .logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; }
+        
+        .container { padding: 0 20px 20px; max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        
+        .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h2 { color: #333; font-size: 18px; margin-bottom: 15px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-group textarea { height: 80px; resize: vertical; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-info { background: #3498db; color: white; }
+        .btn-info:hover { background: #2980b9; }
+        
+        .assignment-list { max-height: 500px; overflow-y: auto; }
+        .assignment-item { padding: 15px; border-bottom: 1px solid #eee; }
+        .assignment-item:last-child { border-bottom: none; }
+        .assignment-item .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+        .assignment-item .title { font-weight: 600; color: #333; }
+        .assignment-item .due { font-size: 12px; color: #888; }
+        .assignment-item .description { color: #666; font-size: 14px; }
+        .assignment-item .meta { margin-top: 5px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .assignment-item .meta .btn { padding: 4px 10px; font-size: 12px; }
+        
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+        .empty-state h4 { color: #555; }
+        .empty-state p { color: #888; font-size: 14px; }
+        
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .nav { flex-direction: column; align-items: stretch; }
+            .nav-right { margin-left: 0; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('lecturer.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('lecturer.course_detail', course_code=course.course_code) }}">📚 {{ course.course_code }}</a>
+        <a href="{{ url_for('lecturer.manage_assignments', course_code=course.course_code) }}" class="active">📝 Assignments</a>
+        <div class="nav-right">
+            <a href="{{ url_for('auth.logout') }}">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>📝 Course Assignments</h1>
+            <span style="color: #888; font-size: 14px;">{{ course.course_code }} - {{ course.course_name }}</span>
+        </div>
+        <a href="{{ url_for('lecturer.course_detail', course_code=course.course_code) }}" class="btn btn-secondary">← Back to Course</a>
+    </div>
+
+    <div class="container">
+        <!-- Create Assignment -->
+        <div class="card">
+            <h2>📝 Create New Assignment</h2>
+            <form method="POST">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" name="title" required placeholder="Assignment title">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Assignment description..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="datetime-local" name="due_date">
+                </div>
+                <div class="form-group">
+                    <label>Total Marks</label>
+                    <input type="number" name="total_marks" value="100">
+                </div>
+                <div class="form-group">
+                    <label>Instructions</label>
+                    <textarea name="instructions" placeholder="Instructions for students..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Attachment URL</label>
+                    <input type="url" name="attachment_url" placeholder="https://example.com/assignment.pdf">
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="is_published" checked>
+                    <label>Publish immediately</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Assignment</button>
+            </form>
+        </div>
+
+        <!-- Assignment List -->
+        <div class="card">
+            <h2>📋 Assignments <span class="badge">{{ assignments|length }}</span></h2>
+            <div class="assignment-list">
+                {% if assignments %}
+                    {% for ass in assignments|reverse %}
+                    <div class="assignment-item">
+                        <div class="header">
+                            <span class="title">{{ ass.title }}</span>
+                            <span class="due">Due: {{ ass.due_date[:10] if ass.due_date else 'No due date' }}</span>
+                        </div>
+                        <div class="description">{{ ass.description[:100] }}{% if ass.description|length > 100 %}...{% endif %}</div>
+                        <div class="meta">
+                            <span class="badge badge-{{ 'success' if ass.is_published else 'warning' }}">
+                                {{ 'Published' if ass.is_published else 'Draft' }}
+                            </span>
+                            <span class="badge badge-info">📝 {{ ass.total_marks|default(100) }} marks</span>
+                            <span class="badge badge-info">📥 {{ ass.submissions|length if ass.submissions else 0 }} submissions</span>
+                            <a href="{{ url_for('lecturer.view_submissions', assignment_id=ass.assignment_id) }}" class="btn btn-info" style="padding: 4px 10px; font-size: 12px;">View Submissions</a>
+                            <form action="{{ url_for('lecturer.delete_assignment', assignment_id=ass.assignment_id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this assignment?');">
+                                <button type="submit" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <h4>No Assignments</h4>
+                        <p>Create assignments for your students.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

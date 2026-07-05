@@ -1,0 +1,147 @@
+<!-- app/templates/admin/edit_user.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit User - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .help-text { font-size: 12px; color: #888; margin-top: 5px; }
+        .user-role-badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .user-role-badge-admin { background: #e74c3c; color: white; }
+        .user-role-badge-lecturer { background: #f39c12; color: white; }
+        .user-role-badge-student { background: #2ecc71; color: white; }
+        .logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; float: right; }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.users') }}" class="active">👥 Users</a>
+        <a href="{{ url_for('admin.courses') }}">📚 Courses</a>
+        <a href="{{ url_for('admin.departments') }}">🏢 Departments</a>
+        <a href="{{ url_for('admin.materials') }}">📄 Materials</a>
+        <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
+        <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+        <a href="{{ url_for('admin.bulk_upload') }}">📤 Bulk Upload</a>
+        <a href="{{ url_for('auth.logout') }}" style="margin-left: auto; color: #e74c3c;">🚪 Logout</a>
+    </div>
+    <div class="container">
+        <h1>✏️ Edit User: {{ user.user_id if user else '' }}</h1>
+        
+        {% if user %}
+        <div style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+            <p>
+                <strong>Role:</strong> 
+                <span class="user-role-badge user-role-badge-{{ user.role }}">
+                    {{ user.role|capitalize }}
+                </span>
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name *</label>
+                    <input type="text" name="first_name" value="{{ user.first_name if user else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name *</label>
+                    <input type="text" name="last_name" value="{{ user.last_name if user else '' }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" value="{{ user.email if user else '' }}" required>
+            </div>
+
+            <div class="form-group">
+                <label>New Password (leave blank to keep current)</label>
+                <input type="password" name="password" placeholder="Enter new password to change">
+                <div class="help-text">Password must be at least 8 characters</div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="department">
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.dept_code }}" {% if user and user.department == dept.dept_code %}selected{% endif %}>
+                            {{ dept.dept_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" name="phone" value="{{ user.phone if user else '' }}" placeholder="e.g., 08012345678">
+                </div>
+            </div>
+
+            <!-- Student-specific fields for level and semester -->
+            {% if user and user.role == 'student' %}
+            <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <h3 style="font-size: 16px; color: #667eea; margin-bottom: 15px;">📚 Student Level & Semester</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Current Level</label>
+                        <select name="level" id="level">
+                            <option value="">Select Level</option>
+                            <option value="nd1" {% if user.current_level == 'nd1' %}selected{% endif %}>ND I</option>
+                            <option value="nd2" {% if user.current_level == 'nd2' %}selected{% endif %}>ND II</option>
+                            <option value="hnd1" {% if user.current_level == 'hnd1' %}selected{% endif %}>HND I</option>
+                            <option value="hnd2" {% if user.current_level == 'hnd2' %}selected{% endif %}>HND II</option>
+                        </select>
+                        <div class="help-text">Student's current academic level</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Current Semester</label>
+                        <select name="semester" id="semester">
+                            <option value="">Select Semester</option>
+                            <option value="first" {% if user.current_semester == 'first' %}selected{% endif %}>First Semester</option>
+                            <option value="second" {% if user.current_semester == 'second' %}selected{% endif %}>Second Semester</option>
+                        </select>
+                        <div class="help-text">Student's current semester</div>
+                    </div>
+                </div>
+                <div style="margin-top: 10px;">
+                    <button type="submit" formaction="{{ url_for('admin.update_student_level', user_id=user.user_id) }}" class="btn btn-primary" style="background: #2ecc71;">Update Level & Semester</button>
+                    <span style="color: #888; font-size: 12px; margin-left: 10px;">This will update the student's current level and semester for course registration.</span>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="is_active" {% if user and user.is_active %}checked{% endif %}>
+                <label>Active</label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Update User</button>
+                <a href="{{ url_for('admin.users') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

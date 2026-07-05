@@ -1,0 +1,142 @@
+<!-- app/templates/admin/edit_course.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Course - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .form-group textarea { height: 100px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .help-text { font-size: 12px; color: #888; margin-top: 5px; }
+        .course-info { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .course-info strong { color: #667eea; }
+        .logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; float: right; }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.users') }}">👥 Users</a>
+        <a href="{{ url_for('admin.courses') }}" class="active">📚 Courses</a>
+        <a href="{{ url_for('admin.departments') }}">🏢 Departments</a>
+        <a href="{{ url_for('admin.materials') }}">📄 Materials</a>
+        <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
+        <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+        <a href="{{ url_for('admin.bulk_upload') }}">📤 Bulk Upload</a>
+        <a href="{{ url_for('auth.logout') }}" style="margin-left: auto; color: #e74c3c;">🚪 Logout</a>
+    </div>
+    <div class="container">
+        <h1>✏️ Edit Course: {{ course.course_code if course else '' }}</h1>
+        
+        <div class="course-info">
+            <p><strong>Course Code:</strong> {{ course.course_code if course else 'N/A' }}</p>
+            <p><strong>Current Level/Semester:</strong> 
+                {% if course %}
+                    {{ course.level|upper }} - 
+                    {% if course.semester == 'first' %}First Semester{% else %}Second Semester{% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label>Course Name *</label>
+                <input type="text" name="course_name" value="{{ course.course_name if course else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description">{{ course.description if course else '' }}</textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Level *</label>
+                    <select name="level" required>
+                        <option value="">Select Level</option>
+                        <option value="nd1" {% if course and course.level == 'nd1' %}selected{% endif %}>ND I</option>
+                        <option value="nd2" {% if course and course.level == 'nd2' %}selected{% endif %}>ND II</option>
+                        <option value="hnd1" {% if course and course.level == 'hnd1' %}selected{% endif %}>HND I</option>
+                        <option value="hnd2" {% if course and course.level == 'hnd2' %}selected{% endif %}>HND II</option>
+                    </select>
+                    <div class="help-text">Program level for this course</div>
+                </div>
+                <div class="form-group">
+                    <label>Semester *</label>
+                    <select name="semester" required>
+                        <option value="">Select Semester</option>
+                        <option value="first" {% if course and course.semester == 'first' %}selected{% endif %}>First Semester</option>
+                        <option value="second" {% if course and course.semester == 'second' %}selected{% endif %}>Second Semester</option>
+                    </select>
+                    <div class="help-text">Semester offering</div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Department</label>
+                    <select name="department">
+                        <option value="">Select Department</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.dept_code }}" {% if course and course.department == dept.dept_code %}selected{% endif %}>
+                            {{ dept.dept_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Credits</label>
+                    <input type="number" name="credits" value="{{ course.credits if course else 3 }}" min="1" max="6">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Lecturer</label>
+                    <select name="lecturer_id">
+                        <option value="">Assign Lecturer</option>
+                        {% for lecturer in lecturers %}
+                        <option value="{{ lecturer.user_id }}" {% if course and course.lecturer_id == lecturer.user_id %}selected{% endif %}>
+                            {{ lecturer.first_name }} {{ lecturer.last_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Academic Year</label>
+                    <input type="text" name="academic_year" value="{{ course.academic_year if course else '' }}" placeholder="e.g., 2024/2025">
+                </div>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="is_active" {% if course and course.is_active %}checked{% endif %}>
+                <label>Active</label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary">Update Course</button>
+                <a href="{{ url_for('admin.courses') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

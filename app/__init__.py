@@ -45,9 +45,14 @@ def create_app(config_class=None):
     # Register blueprints with URL prefixes
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(lecturer_bp, url_prefix='/lecturer')
+    app.register_blueprint(lecturer_bp, url_prefix='/lecturer')  # Make sure this is here
     app.register_blueprint(student_bp, url_prefix='/student')
     logger.info("Blueprints registered successfully")
+    
+    # Log all registered routes for debugging
+    logger.info("Registered routes:")
+    for rule in app.url_map.iter_rules():
+        logger.info(f"  {rule.endpoint}: {rule.rule}")
     
     # Home route - redirect to login
     @app.route('/')

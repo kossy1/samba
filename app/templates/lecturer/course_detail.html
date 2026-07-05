@@ -1,0 +1,167 @@
+<!-- app/templates/lecturer/course_detail.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ course.course_code }} - Course Management</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; transition: background 0.3s; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .nav-right { margin-left: auto; }
+        .nav-right a { color: #e74c3c; }
+        
+        .header { background: white; padding: 20px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; color: #333; }
+        .header .subtitle { font-size: 14px; color: #888; font-weight: normal; }
+        .logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; }
+        .logout:hover { background: #c0392b; }
+        
+        .container { padding: 0 20px 20px; max-width: 1400px; margin: 0 auto; }
+        
+        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .action-card { background: white; padding: 20px; border-radius: 10px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none; color: #333; transition: transform 0.2s; }
+        .action-card:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .action-card .icon { font-size: 30px; display: block; margin-bottom: 10px; }
+        .action-card .label { font-size: 14px; font-weight: 500; }
+        .action-card .count { font-size: 12px; color: #888; }
+        
+        .section { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .section h2 { color: #333; font-size: 18px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .section h2 .badge { font-size: 12px; background: #667eea; color: white; padding: 2px 10px; border-radius: 12px; }
+        
+        .btn { padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-success { background: #2ecc71; color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-info { background: #3498db; color: white; }
+        .btn-info:hover { background: #2980b9; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+        .empty-state h4 { color: #555; margin-bottom: 5px; }
+        .empty-state p { color: #888; font-size: 14px; }
+        
+        .announcement-item, .assignment-item { padding: 10px 0; border-bottom: 1px solid #eee; }
+        .announcement-item:last-child, .assignment-item:last-child { border-bottom: none; }
+        .announcement-item .title, .assignment-item .title { font-weight: 600; color: #333; }
+        .announcement-item .date, .assignment-item .date { font-size: 12px; color: #888; float: right; }
+        .announcement-item .content, .assignment-item .content { color: #666; font-size: 14px; margin-top: 5px; }
+        
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .nav { flex-direction: column; align-items: stretch; }
+            .nav-right { margin-left: 0; }
+            .quick-actions { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('lecturer.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('lecturer.course_detail', course_code=course.course_code) }}" class="active">📚 {{ course.course_code }}</a>
+        <div class="nav-right">
+            <a href="{{ url_for('auth.logout') }}">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>{{ course.course_code }} - {{ course.course_name }}</h1>
+            <span class="subtitle">{{ course.department or 'No Department' }} | {{ course.credits or 0 }} Credits</span>
+        </div>
+        <a href="{{ url_for('lecturer.dashboard') }}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+
+    <div class="container">
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{{ url_for('lecturer.course_students', course_code=course.course_code) }}" class="action-card">
+                <span class="icon">👥</span>
+                <span class="label">Students</span>
+                <span class="count">{{ students|length if students else 0 }} enrolled</span>
+            </a>
+            <a href="{{ url_for('lecturer.manage_announcements', course_code=course.course_code) }}" class="action-card">
+                <span class="icon">📢</span>
+                <span class="label">Announcements</span>
+                <span class="count">{{ announcements|length if announcements else 0 }}</span>
+            </a>
+            <a href="{{ url_for('lecturer.manage_materials', course_code=course.course_code) }}" class="action-card">
+                <span class="icon">📄</span>
+                <span class="label">Materials</span>
+                <span class="count">{{ materials|length if materials else 0 }}</span>
+            </a>
+            <a href="{{ url_for('lecturer.manage_assignments', course_code=course.course_code) }}" class="action-card">
+                <span class="icon">📝</span>
+                <span class="label">Assignments</span>
+                <span class="count">{{ assignments|length if assignments else 0 }}</span>
+            </a>
+            <a href="{{ url_for('lecturer.manage_tests', course_code=course.course_code) }}" class="action-card">
+                <span class="icon">✍️</span>
+                <span class="label">Tests</span>
+                <span class="count">{{ tests|length if tests else 0 }}</span>
+            </a>
+        </div>
+
+        <!-- Recent Announcements -->
+        <div class="section">
+            <h2>
+                📢 Recent Announcements
+                <a href="{{ url_for('lecturer.manage_announcements', course_code=course.course_code) }}" class="btn btn-primary">+ New</a>
+            </h2>
+            {% if announcements %}
+            <div style="max-height: 200px; overflow-y: auto;">
+                {% for ann in announcements[-3:]|reverse %}
+                <div class="announcement-item">
+                    <span class="title">{{ ann.title }}</span>
+                    <span class="date">{{ ann.created_at[:10] if ann.created_at else '' }}</span>
+                    <div class="content">{{ ann.content[:100] }}{% if ann.content|length > 100 %}...{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">📢</div>
+                <h4>No Announcements</h4>
+                <p>Click "New" to send an announcement to your students.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Assignments -->
+        <div class="section">
+            <h2>
+                📝 Recent Assignments
+                <a href="{{ url_for('lecturer.manage_assignments', course_code=course.course_code) }}" class="btn btn-primary">+ New</a>
+            </h2>
+            {% if assignments %}
+            <div style="max-height: 200px; overflow-y: auto;">
+                {% for ass in assignments[-3:]|reverse %}
+                <div class="assignment-item">
+                    <span class="title">{{ ass.title }}</span>
+                    <span class="date">Due: {{ ass.due_date[:10] if ass.due_date else 'No due date' }}</span>
+                    <div class="content">{{ ass.description[:100] }}{% if ass.description|length > 100 %}...{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="icon">📝</div>
+                <h4>No Assignments</h4>
+                <p>Click "New" to create an assignment for your students.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

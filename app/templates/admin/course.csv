@@ -1,0 +1,7 @@
+course_code,course_name,description,department,credits,lecturer_id,level,semester,academic_year,is_active
+CSC101,Introduction to Programming,Basic programming concepts,CSC,3,LEC001,nd1,first,2024/2025,true
+CSC102,Data Structures,Advanced programming,CSC,3,LEC001,nd1,second,2024/2025,true
+ENG101,Engineering Mathematics,Basic engineering math,ENG,3,LEC002,nd2,first,2024/2025,true
+CSC201,Database Systems,Database design and management,CSC,3,LEC001,hnd1,first,2024/2025,true
+CSC202,Software Engineering,Software development methodologies,CSC,3,LEC001,hnd1,second,2024/2025,true
+ENG201,Engineering Design,Advanced engineering design,ENG,3,LEC002,hnd2,first,2024/2025,true

@@ -1,0 +1,98 @@
+<!-- app/templates/admin/edit_material.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Material - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-group textarea { height: 100px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+            .nav a { 
+    color: #ccc; 
+    text-decoration: none; 
+    padding: 10px 15px; 
+    border-radius: 5px; 
+    transition: background 0.3s; 
+}
+.nav a:hover { 
+    background: #333; 
+    color: white; 
+}
+.nav a.active { 
+    background: #667eea; 
+    color: white; 
+}
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.users') }}">👥 Users</a>
+        <a href="{{ url_for('admin.courses') }}">📚 Courses</a>
+        <a href="{{ url_for('admin.departments') }}">🏢 Departments</a>
+        <a href="{{ url_for('admin.materials') }}" class="active">📄 Materials</a>
+        <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
+        <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+        <a href="{{ url_for('admin.bulk_upload') }}">📤 Bulk Upload</a>
+        <a href="{{ url_for('auth.logout') }}" style="margin-left: auto; color: #e74c3c;">🚪 Logout</a>
+    </div>
+    <div class="container">
+        <h1>✏️ Edit Material</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label>Title *</label>
+                <input type="text" name="title" value="{{ material.title if material else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description">{{ material.description if material else '' }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Course</label>
+                <select name="course_code">
+                    <option value="">Select Course</option>
+                    {% for course in courses %}
+                    <option value="{{ course.course_code }}" {% if material and material.course_code == course.course_code %}selected{% endif %}>
+                        {{ course.course_code }} - {{ course.course_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Material Type</label>
+                <select name="material_type">
+                    <option value="pdf" {% if material and material.material_type == 'pdf' %}selected{% endif %}>PDF</option>
+                    <option value="doc" {% if material and material.material_type == 'doc' %}selected{% endif %}>Document</option>
+                    <option value="ppt" {% if material and material.material_type == 'ppt' %}selected{% endif %}>Presentation</option>
+                    <option value="video" {% if material and material.material_type == 'video' %}selected{% endif %}>Video</option>
+                    <option value="other" {% if material and material.material_type == 'other' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>File URL</label>
+                <input type="url" name="file_url" value="{{ material.file_url if material else '' }}" placeholder="https://example.com/file.pdf">
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="is_published" {% if material and material.is_published %}checked{% endif %}>
+                <label>Published</label>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Update Material</button>
+                <a href="{{ url_for('admin.materials') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

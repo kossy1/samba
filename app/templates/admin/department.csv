@@ -1,0 +1,5 @@
+dept_code,dept_name,faculty,head_of_department,description,is_active
+CSC,Computer Science,Science,Dr. Ade Adeyemi,Department of Computer Science,true
+ENG,Engineering,Engineering,Prof. Bello Bello,Department of Engineering,true
+MED,Medicine,Science,Dr. Chinwe Okafor,Department of Medicine,true
+BUS,Business Administration,Management,Prof. Musa Ibrahim,Department of Business,true

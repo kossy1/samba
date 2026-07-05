@@ -1,0 +1,89 @@
+<!-- app/templates/admin/edit_department.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Department - Admin</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .container { max-width: 800px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .form-group textarea { height: 100px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+            .nav a { 
+    color: #ccc; 
+    text-decoration: none; 
+    padding: 10px 15px; 
+    border-radius: 5px; 
+    transition: background 0.3s; 
+}
+.nav a:hover { 
+    background: #333; 
+    color: white; 
+}
+.nav a.active { 
+    background: #667eea; 
+    color: white; 
+}
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.users') }}">👥 Users</a>
+        <a href="{{ url_for('admin.courses') }}">📚 Courses</a>
+        <a href="{{ url_for('admin.departments') }}" class="active">🏢 Departments</a>
+        <a href="{{ url_for('admin.materials') }}">📄 Materials</a>
+        <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
+        <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+        <a href="{{ url_for('admin.bulk_upload') }}">📤 Bulk Upload</a>
+        <a href="{{ url_for('auth.logout') }}" style="margin-left: auto; color: #e74c3c;">🚪 Logout</a>
+    </div>
+    <div class="container">
+        <h1>✏️ Edit Department: {{ department.dept_code if department else '' }}</h1>
+        <form method="POST">
+            <div class="form-group">
+                <label>Department Name *</label>
+                <input type="text" name="dept_name" value="{{ department.dept_name if department else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Faculty</label>
+                <select name="faculty">
+                    <option value="">Select Faculty</option>
+                    <option value="Science" {% if department and department.faculty == 'Science' %}selected{% endif %}>Science</option>
+                    <option value="Engineering" {% if department and department.faculty == 'Engineering' %}selected{% endif %}>Engineering</option>
+                    <option value="Arts" {% if department and department.faculty == 'Arts' %}selected{% endif %}>Arts</option>
+                    <option value="Social Sciences" {% if department and department.faculty == 'Social Sciences' %}selected{% endif %}>Social Sciences</option>
+                    <option value="Management" {% if department and department.faculty == 'Management' %}selected{% endif %}>Management</option>
+                    <option value="Education" {% if department and department.faculty == 'Education' %}selected{% endif %}>Education</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Head of Department</label>
+                <input type="text" name="head_of_department" value="{{ department.head_of_department if department else '' }}">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description">{{ department.description if department else '' }}</textarea>
+            </div>
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="is_active" {% if department and department.is_active %}checked{% endif %}>
+                <label>Active</label>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Update Department</button>
+                <a href="{{ url_for('admin.departments') }}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

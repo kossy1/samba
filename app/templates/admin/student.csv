@@ -1,0 +1,4 @@
+user_id,email,first_name,last_name,password,matric_no,department,phone,programme,year_of_study,is_active
+STU001,student1@polyibadan.edu.ng,John,Doe,Student@123,2024/1001,CSC,08012345678,ND,1,true
+STU002,student2@polyibadan.edu.ng,Jane,Smith,Student@123,2024/1002,ENG,08087654321,HND,2,true
+STU003,student3@polyibadan.edu.ng,Michael,Johnson,Student@123,2024/1003,MED,08011223344,ND,1,true

@@ -1,0 +1,310 @@
+<!-- app/templates/lecturer/tests.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests - {{ course.course_code }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; }
+        
+        .nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; transition: background 0.3s; }
+        .nav a:hover { background: #333; color: white; }
+        .nav a.active { background: #667eea; color: white; }
+        .nav-right { margin-left: auto; }
+        .nav-right a { color: #e74c3c; }
+        
+        .header { background: white; padding: 20px 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .header h1 { font-size: 24px; color: #333; }
+        .header .subtitle { font-size: 14px; color: #888; }
+        .logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; }
+        .logout:hover { background: #c0392b; }
+        
+        .container { padding: 0 20px 20px; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+        
+        .card { background: white; border-radius: 10px; padding: 25px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h2 { color: #333; font-size: 18px; margin-bottom: 15px; border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
+        .form-group textarea { height: 120px; resize: vertical; font-family: monospace; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; }
+        .checkbox-group input { width: auto; }
+        .help-text { font-size: 12px; color: #888; margin-top: 5px; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; display: inline-block; transition: background 0.3s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a67d8; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-success { background: #2ecc71; color: white; }
+        .btn-success:hover { background: #27ae60; }
+        .btn-info { background: #3498db; color: white; }
+        .btn-info:hover { background: #2980b9; }
+        
+        .test-list { max-height: 500px; overflow-y: auto; }
+        .test-item { padding: 15px; border-bottom: 1px solid #eee; }
+        .test-item:last-child { border-bottom: none; }
+        .test-item .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding: 0; background: none; box-shadow: none; }
+        .test-item .title { font-weight: 600; color: #333; font-size: 16px; }
+        .test-item .duration { font-size: 12px; color: #888; }
+        .test-item .description { color: #666; font-size: 14px; margin-top: 5px; }
+        .test-item .meta { margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .test-item .meta .btn { padding: 4px 10px; font-size: 12px; }
+        
+        .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-quiz { background: #9b59b6; color: white; }
+        .badge-exam { background: #e74c3c; color: white; }
+        .badge-practical { background: #2ecc71; color: white; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; }
+        .empty-state .icon { font-size: 40px; margin-bottom: 10px; opacity: 0.5; }
+        .empty-state h4 { color: #555; margin-bottom: 5px; }
+        .empty-state p { color: #888; font-size: 14px; }
+        
+        .csv-upload-area { border: 2px dashed #ddd; border-radius: 8px; padding: 20px; text-align: center; transition: all 0.3s; cursor: pointer; margin-top: 10px; }
+        .csv-upload-area:hover { border-color: #667eea; background: #f8f9ff; }
+        .csv-upload-area.dragover { border-color: #667eea; background: #e8ecff; }
+        .csv-upload-area .upload-icon { font-size: 32px; color: #888; margin-bottom: 5px; }
+        .csv-upload-area p { color: #888; font-size: 13px; }
+        .csv-upload-area input[type="file"] { display: none; }
+        
+        .or-divider { text-align: center; margin: 15px 0; position: relative; }
+        .or-divider::before { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: #ddd; }
+        .or-divider span { background: white; padding: 0 10px; position: relative; color: #888; font-size: 12px; }
+        
+        .question-preview { background: #f8f9fa; border-radius: 5px; padding: 10px; margin-top: 10px; max-height: 150px; overflow-y: auto; }
+        .question-preview .q-item { padding: 5px 0; border-bottom: 1px solid #eee; font-size: 13px; }
+        .question-preview .q-item:last-child { border-bottom: none; }
+        
+        @media (max-width: 768px) {
+            .header { flex-direction: column; gap: 10px; text-align: center; }
+            .nav { flex-direction: column; align-items: stretch; }
+            .nav-right { margin-left: 0; }
+            .container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('lecturer.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('lecturer.course_detail', course_code=course.course_code) }}">📚 {{ course.course_code }}</a>
+        <a href="{{ url_for('lecturer.manage_tests', course_code=course.course_code) }}" class="active">✍️ Tests</a>
+        <div class="nav-right">
+            <a href="{{ url_for('auth.logout') }}">🚪 Logout</a>
+        </div>
+    </div>
+
+    <div class="header">
+        <div>
+            <h1>✍️ Course Tests</h1>
+            <span class="subtitle">{{ course.course_code }} - {{ course.course_name }}</span>
+        </div>
+        <a href="{{ url_for('lecturer.course_detail', course_code=course.course_code) }}" class="btn btn-secondary">← Back to Course</a>
+    </div>
+
+    <div class="container">
+        <!-- Create Test -->
+        <div class="card">
+            <h2>✍️ Create New Test</h2>
+            
+            <!-- CSV Upload Section -->
+            <div style="background: #f0f7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <h3 style="font-size: 14px; color: #667eea; margin-bottom: 10px;">📤 Import from CSV</h3>
+                <form method="POST" enctype="multipart/form-data" id="csvForm">
+                    <input type="hidden" name="title" id="csvTitle" value="">
+                    <input type="hidden" name="description" id="csvDescription" value="">
+                    <input type="hidden" name="test_type" id="csvTestType" value="quiz">
+                    <input type="hidden" name="duration_minutes" id="csvDuration" value="60">
+                    <input type="hidden" name="instructions" id="csvInstructions" value="">
+                    <input type="hidden" name="is_published" id="csvPublished" value="on">
+                    
+                    <div class="csv-upload-area" id="csvUploadArea" onclick="document.getElementById('csvFileInput').click()">
+                        <div class="upload-icon">📊</div>
+                        <p>Drop CSV file here or click to browse</p>
+                        <p style="font-size: 11px; color: #aaa;">Format: question, options (JSON array), correct (index), marks</p>
+                        <input type="file" id="csvFileInput" name="csv_file" accept=".csv" onchange="handleCSVUpload(this)">
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <a href="{{ url_for('lecturer.download_test_template') }}" class="btn btn-info" style="font-size: 12px; padding: 6px 12px;">📥 Download Template</a>
+                        <button type="submit" class="btn btn-success" style="font-size: 12px; padding: 6px 12px;" id="csvUploadBtn">⬆️ Upload CSV</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="or-divider"><span>OR Create Manually</span></div>
+            
+            <!-- Manual Creation Form -->
+            <form method="POST">
+                <div class="form-group">
+                    <label>Title *</label>
+                    <input type="text" name="title" required placeholder="e.g., Week 1 Quiz">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" placeholder="Brief description of the test..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Test Type</label>
+                    <select name="test_type">
+                        <option value="quiz">Quiz</option>
+                        <option value="exam">Exam</option>
+                        <option value="practical">Practical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration (minutes)</label>
+                    <input type="number" name="duration_minutes" value="60" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Instructions</label>
+                    <textarea name="instructions" placeholder="Instructions for students..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Questions (JSON format)</label>
+                    <textarea name="questions" style="height: 150px; font-family: monospace; font-size: 13px;" placeholder='[
+  {
+    "question": "What is 2+2?",
+    "options": ["3", "4", "5", "6"],
+    "correct": 1,
+    "marks": 1
+  },
+  {
+    "question": "What is the capital of France?",
+    "options": ["London", "Paris", "Berlin", "Madrid"],
+    "correct": 1,
+    "marks": 2
+  }
+]'></textarea>
+                    <div class="help-text">
+                        💡 Each question should have: question (string), options (array), correct (index), marks (number)
+                    </div>
+                </div>
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" name="is_published" checked>
+                    <label>Publish immediately</label>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">✍️ Create Test</button>
+            </form>
+        </div>
+
+        <!-- Test List -->
+        <div class="card">
+            <h2>📋 Tests <span class="badge badge-info">{{ tests|length }}</span></h2>
+            <div class="test-list">
+                {% if tests %}
+                    {% for test in tests|reverse %}
+                    <div class="test-item">
+                        <div class="header">
+                            <span class="title">{{ test.title }}</span>
+                            <span class="duration">⏱️ {{ test.duration_minutes|default(60) }} min</span>
+                        </div>
+                        <div class="description">{{ test.description[:100] }}{% if test.description|length > 100 %}...{% endif %}</div>
+                        <div class="meta">
+                            <span class="badge badge-{{ test.test_type|lower }}">{{ test.test_type|capitalize }}</span>
+                            <span class="badge badge-{{ 'success' if test.is_published else 'warning' }}">
+                                {{ 'Published' if test.is_published else 'Draft' }}
+                            </span>
+                            <span class="badge badge-info">✍️ {{ test.total_marks|default(100) }} marks</span>
+                            <span class="badge badge-info">📝 {{ test.questions|length if test.questions else 0 }} questions</span>
+                            <span class="badge badge-info">👥 {{ test.attempts|length if test.attempts else 0 }} attempts</span>
+                            <form action="{{ url_for('lecturer.delete_test', test_id=test.test_id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Delete this test?');">
+                                <button type="submit" class="btn btn-danger" style="padding: 4px 10px; font-size: 12px;">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <div class="icon">✍️</div>
+                        <h4>No Tests</h4>
+                        <p>Create your first test using the form on the left.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CSV Upload handling
+        const csvUploadArea = document.getElementById('csvUploadArea');
+        const csvFileInput = document.getElementById('csvFileInput');
+        
+        csvUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+        
+        csvUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+        
+        csvUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.csv')) {
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                csvFileInput.files = dataTransfer.files;
+                handleCSVUpload(csvFileInput);
+            } else {
+                alert('Please upload a CSV file');
+            }
+        });
+        
+        function handleCSVUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            if (!file.name.endsWith('.csv')) {
+                alert('Please upload a CSV file');
+                input.value = '';
+                return;
+            }
+            
+            // Show file name
+            const uploadArea = document.getElementById('csvUploadArea');
+            const p = uploadArea.querySelector('p');
+            p.textContent = `📊 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            p.style.color = '#667eea';
+            p.style.fontWeight = '500';
+            
+            // Auto-submit after a moment
+            document.getElementById('csvUploadBtn').textContent = '⬆️ Uploading...';
+            document.getElementById('csvUploadBtn').disabled = true;
+            
+            // Submit the form
+            setTimeout(() => {
+                document.getElementById('csvForm').submit();
+            }, 500);
+        }
+        
+        // Preview JSON formatting
+        document.querySelector('textarea[name="questions"]').addEventListener('input', function() {
+            try {
+                const data = JSON.parse(this.value);
+                if (Array.isArray(data) && data.length > 0) {
+                    this.style.borderColor = '#2ecc71';
+                }
+            } catch(e) {
+                if (this.value.trim()) {
+                    this.style.borderColor = '#e74c3c';
+                } else {
+                    this.style.borderColor = '#ddd';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

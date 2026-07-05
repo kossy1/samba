@@ -5,6 +5,8 @@ from app.services.department_service import DepartmentService
 from app.services.material_service import MaterialService
 from app.services.assignment_service import AssignmentService
 from app.services.test_service import TestService
+from app.services.lecturer_service import LecturerService
+from app.services.student_service import StudentService
 
 __all__ = [
     'UserService',
@@ -12,5 +14,7 @@ __all__ = [
     'DepartmentService',
     'MaterialService',
     'AssignmentService',
-    'TestService'
+    'TestService',
+    'LecturerService',
+    'StudentService'
 ]
