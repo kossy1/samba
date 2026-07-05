@@ -26,7 +26,8 @@ def create_app(config_class=None):
     # Create Flask app instance
     app = Flask(__name__, 
                 template_folder='templates',
-                static_folder='static')
+                static_folder='static',
+                static_url_path='/static')
     
     # Load configuration
     app.config.from_object(config_class)
@@ -37,22 +38,20 @@ def create_app(config_class=None):
     logger.info("Extensions initialized successfully")
     
     # Import and register blueprints
-    from app.routes.auth import bp as auth_bp
-    from app.routes.admin import bp as admin_bp
-    from app.routes.lecturer import bp as lecturer_bp
-    from app.routes.student import bp as student_bp
-    
-    # Register blueprints with URL prefixes
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-    app.register_blueprint(lecturer_bp, url_prefix='/lecturer')  # Make sure this is here
-    app.register_blueprint(student_bp, url_prefix='/student')
-    logger.info("Blueprints registered successfully")
-    
-    # Log all registered routes for debugging
-    logger.info("Registered routes:")
-    for rule in app.url_map.iter_rules():
-        logger.info(f"  {rule.endpoint}: {rule.rule}")
+    try:
+        from app.routes.auth import bp as auth_bp
+        from app.routes.admin import bp as admin_bp
+        from app.routes.lecturer import bp as lecturer_bp
+        from app.routes.student import bp as student_bp
+        
+        # Register blueprints with URL prefixes
+        app.register_blueprint(auth_bp, url_prefix='/auth')
+        app.register_blueprint(admin_bp, url_prefix='/admin')
+        app.register_blueprint(lecturer_bp, url_prefix='/lecturer')
+        app.register_blueprint(student_bp, url_prefix='/student')
+        logger.info("Blueprints registered successfully")
+    except Exception as e:
+        logger.error(f"Error registering blueprints: {e}")
     
     # Home route - redirect to login
     @app.route('/')
