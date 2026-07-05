@@ -1,6 +1,6 @@
 # app/repositories/user_repository.py
 from app.repositories.base_repository import BaseRepository
-import json
+from app.extensions import kv
 
 class UserRepository(BaseRepository):
     """User data access layer"""
@@ -8,11 +8,28 @@ class UserRepository(BaseRepository):
     def __init__(self):
         super().__init__('user')
     
+    def _prepare_for_redis(self, data: dict):
+        """Convert data to Redis-compatible format"""
+        prepared = {}
+        for key, value in data.items():
+            if value is None:
+                prepared[key] = ''
+            elif isinstance(value, bool):
+                prepared[key] = 1 if value else 0
+            elif isinstance(value, (int, float, str)):
+                prepared[key] = value
+            else:
+                prepared[key] = str(value)
+        return prepared
+    
     def save(self, user_id: str, user_data: dict):
         """Save user data"""
+        # Prepare data for Redis
+        prepared_data = self._prepare_for_redis(user_data)
+        
         # Store in main user hash
         key = self._get_key(user_id)
-        kv.hset(key, mapping=user_data)
+        kv.hset(key, mapping=prepared_data)
         
         # Add to role-specific set
         role = user_data.get('role')
@@ -28,7 +45,25 @@ class UserRepository(BaseRepository):
         """Find user by ID"""
         key = self._get_key(user_id)
         data = kv.hgetall(key)
-        return data if data else None
+        if data:
+            # Convert back from Redis format
+            return self._prepare_from_redis(data)
+        return None
+    
+    def _prepare_from_redis(self, data: dict):
+        """Convert Redis data back to Python format"""
+        prepared = {}
+        for key, value in data.items():
+            if key in ['is_active', 'is_verified', 'is_admin']:
+                prepared[key] = value == '1' or value == 1
+            elif key in ['year_of_study', 'gpa']:
+                try:
+                    prepared[key] = float(value) if '.' in str(value) else int(value)
+                except (ValueError, TypeError):
+                    prepared[key] = value
+            else:
+                prepared[key] = value
+        return prepared
     
     def find_all(self):
         """Find all users"""
@@ -75,7 +110,8 @@ class UserRepository(BaseRepository):
             return None
         
         # Update hash
+        prepared_data = self._prepare_for_redis(user_data)
         key = self._get_key(user_id)
-        kv.hset(key, mapping=user_data)
+        kv.hset(key, mapping=prepared_data)
         
         return user_data

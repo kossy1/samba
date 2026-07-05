@@ -1,0 +1,51 @@
+<!-- app/templates/admin/departments.html -->
+<!DOCTYPE html>
+<html>
+<head><title>Departments - Admin</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+.nav { background: #1a1a2e; padding: 10px 20px; display: flex; gap: 10px; }
+.nav a { color: #ccc; text-decoration: none; padding: 10px 15px; border-radius: 5px; }
+.nav a:hover { background: #333; color: white; }
+.nav a.active { background: #667eea; color: white; }
+.header { background: white; padding: 20px; border-radius: 5px; margin: 20px 0; display: flex; justify-content: space-between; }
+.logout { background: #e74c3c; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; }
+.table-container { background: white; border-radius: 5px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: #f8f9fa; }
+</style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('admin.dashboard') }}">📊 Dashboard</a>
+        <a href="{{ url_for('admin.users') }}">👥 Users</a>
+        <a href="{{ url_for('admin.courses') }}">📚 Courses</a>
+        <a href="{{ url_for('admin.departments') }}" class="active">🏢 Departments</a>
+        <a href="{{ url_for('admin.materials') }}">📄 Materials</a>
+        <a href="{{ url_for('admin.assignments') }}">📝 Assignments</a>
+        <a href="{{ url_for('admin.tests') }}">✍️ Tests</a>
+    </div>
+    <div class="header">
+        <h1>🏢 Department Management</h1>
+        <a href="{{ url_for('auth.logout') }}" class="logout">Logout</a>
+    </div>
+    <div class="table-container">
+        <table>
+            <thead><tr><th>Code</th><th>Name</th><th>Faculty</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for dept in departments %}
+                <tr>
+                    <td><strong>{{ dept.dept_code }}</strong></td>
+                    <td>{{ dept.dept_name }}</td>
+                    <td>{{ dept.faculty or 'N/A' }}</td>
+                    <td>{{ 'Active' if dept.is_active else 'Inactive' }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" style="text-align:center;padding:40px;">No departments found</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

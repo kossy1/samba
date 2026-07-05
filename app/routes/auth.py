@@ -4,6 +4,7 @@ from app.services.user_service import UserService
 import logging
 
 bp = Blueprint('auth', __name__)
+logger = logging.getLogger(__name__)
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -11,6 +12,8 @@ def login():
     if request.method == 'POST':
         user_id = request.form.get('user_id')
         password = request.form.get('password')
+        
+        current_app.logger.info(f"Login attempt for user: {user_id}")
         
         if not user_id or not password:
             flash('Please enter both user ID and password.', 'error')
@@ -22,10 +25,12 @@ def login():
             user = user_service.authenticate(user_id, password)
             
             if user:
-                session['user_id'] = user.user_id
-                session['user_role'] = user.role
-                session['user_name'] = user.full_name
-                session['user_email'] = user.email
+                current_app.logger.info(f"Login successful for user: {user_id}")
+                # Ensure all session values are strings
+                session['user_id'] = str(user.user_id)
+                session['user_role'] = str(user.role)
+                session['user_name'] = str(user.full_name)
+                session['user_email'] = str(user.email)
                 
                 flash(f'Welcome back, {user.full_name}!', 'success')
                 
@@ -37,9 +42,12 @@ def login():
                 else:
                     return redirect(url_for('student.dashboard'))
             else:
+                current_app.logger.warning(f"Login failed for user: {user_id}")
                 flash('Invalid credentials. Please try again.', 'error')
         except Exception as e:
             current_app.logger.error(f"Login error: {e}")
+            import traceback
+            traceback.print_exc()
             flash('An error occurred during login. Please try again.', 'error')
     
     return render_template('auth/login.html')

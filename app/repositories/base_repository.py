@@ -1,3 +1,4 @@
+# app/repositories/base_repository.py
 from app.extensions import kv
 import json
 from typing import Optional, List, Dict, Any
@@ -16,10 +17,25 @@ class BaseRepository:
         """Key for storing all items"""
         return f"{self.key_prefix}:all"
     
+    def _prepare_for_redis(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert data to Redis-compatible format"""
+        prepared = {}
+        for key, value in data.items():
+            if value is None:
+                prepared[key] = ''
+            elif isinstance(value, bool):
+                prepared[key] = 1 if value else 0
+            elif isinstance(value, (int, float, str)):
+                prepared[key] = value
+            else:
+                prepared[key] = str(value)
+        return prepared
+    
     def save(self, identifier: str, data: Dict[str, Any]) -> bool:
-        """Save data to Redis"""
+        """Save data to Redis as JSON string (simple storage)"""
         try:
             key = self._get_key(identifier)
+            # Convert to JSON string for simple storage
             kv.set(key, json.dumps(data))
             # Add to index set
             kv.sadd(self._get_all_key(), identifier)

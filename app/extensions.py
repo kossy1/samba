@@ -1,74 +1,51 @@
 # app/extensions.py
 import os
-import redis
-from flask_session import Session
-from flask import Flask
+from flask import Flask, session as flask_session
 from dotenv import load_dotenv
-from urllib.parse import urlparse
+import logging
+import json
+from datetime import timedelta
 
 load_dotenv()
 
-class RedisClient:
-    """Redis client wrapper supporting both local Redis and Vercel KV"""
-    _instance = None
-    
-    def __new__(cls):
-        if cls._instance is None:
-            # Check if we're using Vercel KV
-            kv_url = os.getenv('KV_REST_API_URL')
-            kv_token = os.getenv('KV_REST_API_TOKEN')
-            
-            if kv_url and kv_token:
-                # For Vercel KV (Upstash), use the Redis URL with token
-                parsed = urlparse(kv_url)
-                if parsed.scheme == 'redis':
-                    # Reconstruct URL with token as password
-                    redis_url = f"redis://:{kv_token}@{parsed.hostname}:{parsed.port}/{parsed.path.lstrip('/') if parsed.path else '0'}"
-                    cls._instance = redis.from_url(redis_url, decode_responses=True)
-                    print("✅ Connected to Vercel KV (Production)")
-                else:
-                    # Fallback to direct connection
-                    cls._instance = redis.Redis(
-                        host=parsed.hostname,
-                        port=parsed.port,
-                        password=kv_token,
-                        decode_responses=True
-                    )
-                    print("✅ Connected to Vercel KV (Production - Direct)")
-            else:
-                # Use local Redis
-                redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-                cls._instance = redis.from_url(redis_url, decode_responses=True)
-                print(f"✅ Connected to local Redis at {redis_url} (Development)")
-        
-        return cls._instance
-    
-    @classmethod
-    def get_client(cls):
-        """Get the Redis instance"""
-        return cls._instance
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Initialize Redis client - FIXED: Use get_client() instead of get()
-kv = RedisClient.get_client()
+# Try to import Redis, but handle it gracefully if not installed
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    REDIS_AVAILABLE = False
+    logger.warning("⚠️ Redis module not installed. Using filesystem session.")
 
-# Initialize Flask-Session
-session_store = Session()
+# Initialize Redis connection
+kv = None
+if REDIS_AVAILABLE:
+    try:
+        redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+        kv = redis.from_url(redis_url, decode_responses=True)
+        # Test connection
+        kv.ping()
+        logger.info("✅ Connected to Redis")
+    except Exception as e:
+        logger.warning(f"⚠️ Redis connection error: {e}")
+        kv = None
+
+# Use Flask's built-in session (no Flask-Session)
+session_store = None
 
 def init_extensions(app: Flask):
     """Initialize all extensions with the app"""
-    # Configure session to use Redis
-    app.config['SESSION_TYPE'] = 'redis'
-    app.config['SESSION_REDIS'] = kv
-    
-    # Session configuration
-    app.config['SESSION_PERMANENT'] = False
-    app.config['SESSION_USE_SIGNER'] = True
-    app.config['SESSION_KEY_PREFIX'] = os.getenv('SESSION_KEY_PREFIX', 'poly_session:')
-    app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
+    # Use Flask's built-in session
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+    app.config['SESSION_COOKIE_NAME'] = 'poly_session'
     app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SECURE'] = os.getenv('SESSION_COOKIE_SECURE', 'False').lower() == 'true'
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
     
-    # Initialize session
-    session_store.init_app(app)
+    logger.info("✅ Using Flask built-in session")
     
-    return kv, session_store
+    return kv, None
