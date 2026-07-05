@@ -1,5 +1,6 @@
 # app/utils/error_handlers.py
 from flask import render_template, jsonify, request
+import logging
 
 def register_error_handlers(app):
     """Register error handlers for the application"""
@@ -18,6 +19,8 @@ def register_error_handlers(app):
     
     @app.errorhandler(500)
     def server_error(error):
+        # Log the error
+        app.logger.error(f"Server error: {error}")
         if request.headers.get('Accept') == 'application/json':
             return jsonify({'error': 'Internal server error'}), 500
         return render_template('errors/500.html'), 500
@@ -27,3 +30,11 @@ def register_error_handlers(app):
         if request.headers.get('Accept') == 'application/json':
             return jsonify({'error': 'Unauthorized'}), 401
         return render_template('errors/401.html'), 401
+    
+    @app.errorhandler(Exception)
+    def handle_exception(error):
+        """Generic exception handler"""
+        app.logger.error(f"Unhandled exception: {error}")
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({'error': 'An unexpected error occurred'}), 500
+        return render_template('errors/500.html'), 500

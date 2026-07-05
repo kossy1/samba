@@ -1,3 +1,4 @@
+# app/models/user.py
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional, List
@@ -37,34 +38,18 @@ class User:
             'phone': self.phone,
             'profile_image': self.profile_image,
             'is_active': self.is_active,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'last_login': self.last_login.isoformat() if self.last_login else None
         }
-    
-    @classmethod
-    def from_dict(cls, data: dict) -> 'User':
-        """Create model from dictionary"""
-        return cls(
-            user_id=data['user_id'],
-            email=data['email'],
-            password_hash=data['password_hash'],
-            role=data['role'],
-            first_name=data['first_name'],
-            last_name=data['last_name'],
-            department=data.get('department'),
-            phone=data.get('phone'),
-            profile_image=data.get('profile_image'),
-            is_active=data.get('is_active', True),
-            created_at=datetime.fromisoformat(data['created_at']) if data.get('created_at') else datetime.now(),
-            updated_at=datetime.fromisoformat(data['updated_at']) if data.get('updated_at') else datetime.now(),
-            last_login=datetime.fromisoformat(data['last_login']) if data.get('last_login') else None
-        )
+
 
 @dataclass
 class Lecturer(User):
     """Lecturer-specific model extending User"""
+    # All fields with no default values must come first
     staff_id: str
+    # Then fields with default values
     specialization: Optional[str] = None
     office_location: Optional[str] = None
     consultation_hours: Optional[str] = None
@@ -79,12 +64,15 @@ class Lecturer(User):
         })
         return base_dict
 
+
 @dataclass
 class Student(User):
     """Student-specific model extending User"""
+    # All fields with no default values must come first
     matric_no: str
     programme: str  # e.g., 'ND', 'HND'
     year_of_study: int
+    # Then fields with default values
     faculty: Optional[str] = None
     enrolled_courses: List[str] = field(default_factory=list)
     gpa: Optional[float] = None

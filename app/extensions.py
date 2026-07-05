@@ -1,4 +1,4 @@
-# app/extensions.py (Alternative version using redis library)
+# app/extensions.py
 import os
 import redis
 from flask_session import Session
@@ -20,8 +20,6 @@ class RedisClient:
             
             if kv_url and kv_token:
                 # For Vercel KV (Upstash), use the Redis URL with token
-                # Upstash format: redis://username:password@host:port
-                # Since Upstash uses token as password
                 parsed = urlparse(kv_url)
                 if parsed.scheme == 'redis':
                     # Reconstruct URL with token as password
@@ -45,12 +43,15 @@ class RedisClient:
         
         return cls._instance
     
-    def get(self):
+    @classmethod
+    def get_client(cls):
         """Get the Redis instance"""
-        return self._instance
+        return cls._instance
 
-# Initialize Redis client
-kv = RedisClient().get()
+# Initialize Redis client - FIXED: Use get_client() instead of get()
+kv = RedisClient.get_client()
+
+# Initialize Flask-Session
 session_store = Session()
 
 def init_extensions(app: Flask):
