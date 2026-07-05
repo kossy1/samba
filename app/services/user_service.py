@@ -11,7 +11,7 @@ class UserService:
         self.user_repo = UserRepository()
     
     def authenticate(self, user_id: str, password: str):
-        """Authenticate a user"""
+        """Authenticate a user by user_id"""
         try:
             user_data = self.user_repo.find_by_id(user_id)
             
@@ -47,6 +47,53 @@ class UserService:
             print(f"Authentication error: {e}")
             import traceback
             traceback.print_exc()
+            return None
+    
+    def find_by_matric(self, matric_no: str):
+        """Find a student by matric number"""
+        try:
+            all_users = self.user_repo.find_all()
+            for user in all_users:
+                if user.get('role') == 'student' and user.get('matric_no') == matric_no:
+                    return user
+            return None
+        except Exception as e:
+            print(f"Find by matric error: {e}")
+            return None
+    
+    def find_by_email(self, email: str):
+        """Find a user by email"""
+        try:
+            all_users = self.user_repo.find_all()
+            for user in all_users:
+                if user.get('email') == email:
+                    return user
+            return None
+        except Exception as e:
+            print(f"Find by email error: {e}")
+            return None
+    
+    def find_by_identifier(self, identifier: str):
+        """Find user by username, email, or matric number"""
+        try:
+            # First try as user_id
+            user = self.user_repo.find_by_id(identifier)
+            if user:
+                return user
+            
+            # Then try as email
+            user = self.find_by_email(identifier)
+            if user:
+                return user
+            
+            # Finally try as matric number (students only)
+            user = self.find_by_matric(identifier)
+            if user:
+                return user
+            
+            return None
+        except Exception as e:
+            print(f"Find by identifier error: {e}")
             return None
     
     def create_user(self, user_data: dict):
@@ -175,7 +222,9 @@ class UserService:
                     gpa=user_data.get('gpa'),
                     created_at=user_data.get('created_at'),
                     updated_at=user_data.get('updated_at'),
-                    last_login=user_data.get('last_login')
+                    last_login=user_data.get('last_login'),
+                    current_level=user_data.get('current_level'),
+                    current_semester=user_data.get('current_semester')
                 )
             elif role == 'lecturer':
                 return Lecturer(

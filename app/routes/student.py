@@ -48,6 +48,10 @@ def dashboard():
             flash('Student not found', 'error')
             return redirect(url_for('auth.logout'))
         
+        # Store matric number in session if not already
+        if 'matric_no' not in session and student.get('matric_no'):
+            session['matric_no'] = student.get('matric_no')
+        
         # Get enrolled courses with details
         enrolled_courses = student_service.get_enrolled_courses(student_id)
         

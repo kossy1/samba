@@ -98,7 +98,12 @@ def create_user():
         
         # Add role-specific fields
         if user_data['role'] == 'student':
-            user_data['matric_no'] = request.form.get('matric_no')
+            matric_no = request.form.get('matric_no')
+            if not matric_no:
+                flash('Matric Number is required for students', 'error')
+                departments = get_departments()
+                return render_template('admin/create_user.html', departments=departments)
+            user_data['matric_no'] = matric_no
             user_data['programme'] = request.form.get('programme')
             user_data['year_of_study'] = int(request.form.get('year_of_study', 1))
             # Set default level and semester based on year_of_study
@@ -115,7 +120,12 @@ def create_user():
                 user_data['current_level'] = 'nd1'
             user_data['current_semester'] = 'first'
         elif user_data['role'] == 'lecturer':
-            user_data['staff_id'] = request.form.get('staff_id')
+            staff_id = request.form.get('staff_id')
+            if not staff_id:
+                flash('Staff ID is required for lecturers', 'error')
+                departments = get_departments()
+                return render_template('admin/create_user.html', departments=departments)
+            user_data['staff_id'] = staff_id
             user_data['specialization'] = request.form.get('specialization')
         
         user_service = UserService()
@@ -135,6 +145,11 @@ def create_user():
 def edit_user(user_id):
     """Edit a user"""
     user_service = UserService()
+    user = user_service.get_user(user_id)
+    
+    if not user:
+        flash('User not found', 'error')
+        return redirect(url_for('admin.users'))
     
     if request.method == 'POST':
         user_data = {
@@ -145,6 +160,18 @@ def edit_user(user_id):
             'phone': request.form.get('phone'),
             'is_active': request.form.get('is_active') == 'on'
         }
+        
+        # For students, update matric number if provided
+        if user.get('role') == 'student':
+            matric_no = request.form.get('matric_no')
+            if matric_no:
+                user_data['matric_no'] = matric_no
+        
+        # For lecturers, update staff ID if provided
+        if user.get('role') == 'lecturer':
+            staff_id = request.form.get('staff_id')
+            if staff_id:
+                user_data['staff_id'] = staff_id
         
         # Update password if provided
         if request.form.get('password'):
@@ -157,7 +184,6 @@ def edit_user(user_id):
         else:
             flash('Failed to update user.', 'error')
     
-    user = user_service.get_user(user_id)
     departments = get_departments()
     return render_template('admin/edit_user.html', user=user, departments=departments)
 
@@ -188,6 +214,7 @@ def update_student_level(user_id):
     try:
         level = request.form.get('level')
         semester = request.form.get('semester')
+        matric_no = request.form.get('matric_no')
         
         if not level or not semester:
             flash('Level and semester are required', 'error')
@@ -202,6 +229,8 @@ def update_student_level(user_id):
         
         user['current_level'] = level
         user['current_semester'] = semester
+        if matric_no:
+            user['matric_no'] = matric_no
         user['updated_at'] = datetime.now().isoformat()
         
         result = user_service.update_user(user_id, user)

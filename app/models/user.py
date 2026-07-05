@@ -108,7 +108,7 @@ class Student:
     role: str
     first_name: str
     last_name: str
-    matric_no: str
+    matric_no: str  # Required for student login
     programme: str
     year_of_study: int
     

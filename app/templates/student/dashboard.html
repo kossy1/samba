@@ -89,6 +89,8 @@
         .empty-state h3 { color: #555; margin-bottom: 10px; }
         .empty-state p { color: #888; }
         
+        .matric-badge { background: #667eea; color: white; padding: 4px 12px; border-radius: 15px; font-size: 12px; font-weight: 600; }
+        
         @media (max-width: 768px) {
             .header { flex-direction: column; gap: 10px; text-align: center; }
             .nav { flex-direction: column; align-items: stretch; }
@@ -114,7 +116,10 @@
     <div class="header">
         <div>
             <h1>📊 Student Dashboard</h1>
-            <span class="subtitle">{{ student.matric_no if student else '' }} | {{ student.programme if student else '' }}</span>
+            <span class="subtitle">
+                <span class="matric-badge">🎓 {{ student.matric_no if student and student.matric_no else session.get('matric_no', 'N/A') }}</span>
+                | {{ student.programme if student else '' }}
+            </span>
         </div>
         <div>
             <span style="margin-right: 15px;">Welcome, <strong>{{ user_name }}</strong></span>
@@ -144,9 +149,11 @@
         <!-- Level and Semester Info Banner -->
         <div class="info-banner">
             <div class="level-info">
-                📚 Your Current Level: <strong>{{ student.current_level|upper if student.current_level else 'Not Set' }}</strong>
+                🎓 Matric Number: <strong>{{ student.matric_no if student and student.matric_no else session.get('matric_no', 'N/A') }}</strong>
                 &nbsp;|&nbsp; 
-                📅 Current Semester: <strong>{{ 'First Semester' if student.current_semester == 'first' else 'Second Semester' if student.current_semester == 'second' else 'Not Set' }}</strong>
+                📚 Level: <strong>{{ student.current_level|upper if student.current_level else 'Not Set' }}</strong>
+                &nbsp;|&nbsp; 
+                📅 Semester: <strong>{{ 'First Semester' if student.current_semester == 'first' else 'Second Semester' if student.current_semester == 'second' else 'Not Set' }}</strong>
             </div>
             <div>
                 <span class="badge badge-level">{{ student.current_level|upper if student.current_level else 'N/A' }}</span>
